@@ -1,0 +1,33 @@
+Each of the stages below should be handled incrementally
+(i.e. coinductively), such that the "obsolete" set only contains
+completely obsolete elements.  For example, if an output element is a
+combination of input elements, we only remove an output element once
+all the input elements have been removed.
+
+On write:
+
+* split trie into subtries according to ACL, and perform following stages on each subtrie independently.
+
+  * map trie to set of key/value bytestrings
+
+  * fragment set of bytestrings into a new set of bytestrings, each of
+    size N (splitting any that are larger than N; combining and
+    padding any that are smaller than N)
+
+  * encrypt set of plaintext bytestrings into set of ciphertext
+    bytestrings using a symmetric key
+
+  * update X-ary merkle tree
+
+  * encrypt key for all readers if that has not already been done
+
+* update X-ary merkle tree of all trees with an ACL writer set in common
+
+* tag root of above tree with version number and database ID and sign
+  the result
+
+On read, reverse above, waiting until the merkle tree is complete and
+then verifying it is signed by a writer in the ACL, that the subtries
+belong in that ACL, that the database ID matches, and that the version
+number is greater than any we've already seen for that writer set.  If
+any assertion fails, ignore that update and use the previous version.
